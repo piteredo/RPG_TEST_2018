@@ -3,7 +3,7 @@
 // assets.js
 // 2018 @auther piteredo
 // This Program is MIT license.
-// 
+//  
 //
 const ASSETS = {
 	image: {
