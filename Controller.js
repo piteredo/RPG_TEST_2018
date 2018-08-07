@@ -12,47 +12,40 @@ phina.define("Controller", {
 		this.superInit({
 			radius: 187.5/2,
 			fill: null,
-			stroke: "rgb(210,210,200)",
+			stroke: "rgb(200, 200, 190)",
 			strokeWidth: 10
 		});
 
 		this.target = target; //target for send point msg.
 
 		this.setInteractive(true);
-		this.on('pointstart', function(e){
-			this._pointStart(e);
-		}.bind(this));
-		this.on('pointmove', function(e){
-			this._pointMove(e);
-		}.bind(this));
-		this.on('pointend', function(e){
-			this._pointEnd(e);
-		}.bind(this));
+		this.on('pointstart', function(e){ this._pointStart(e) }.bind(this));
+		this.on('pointmove', function(e){	this._pointMove(e)	}.bind(this));
+		this.on('pointend', function(e){ this._pointEnd(e) }.bind(this));
 	},
 
 	_pointStart: function(e){
-		let dir = this._getDirection(e);
-		this.target.pointStart(dir);
+		this.target.pointStart(this._getDirection(e));
 	},
 
 	_pointMove: function(e){
-		let dir = this._getDirection(e);
-		this.target.pointMove(dir);
+		this.target.pointMove(this._getDirection(e));
 	},
 
 	_pointEnd: function(e){
-		let dir = this._getDirection(e);
-		this.target.pointEnd(dir);
+		this.target.pointEnd(this._getDirection(e));
 	},
 
 	_getDirection: function(e){
-		let centerPos = Vector2(this.x , this.y);
-		let pointedPos = Vector2(e.pointer.x , e.pointer.y);
+		let centerPos = Vector2(this.x, this.y);
+		let pointedPos = Vector2(e.pointer.x, e.pointer.y);
 		return pointedPos.sub(centerPos).getDirection(); // 8 way
 	}
 });
 
-phina.geom.Vector2.prototype.getDirection = function() {
+
+//extention of phina.js(4 way -> 8 way)
+phina.geom.Vector2.prototype.getDirection = function(){
   var angle = this.toDegree();
   if(angle>=337.5 || angle<22.5) return "right";
   else if(angle<67.5) return "right_down";

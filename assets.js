@@ -20,32 +20,32 @@ const ASSETS = {
 			},
 			"animations": {
 				"right_down": {
-					"frames": [16, 17, 15],
+					"frames": [7, 8, 6],
 					"next": "right_down",
 					"frequency": 4,
 				},
 				"down": {
-					"frames": [13, 14, 12],
+					"frames": [7, 8, 6],
 					"next": "down",
 					"frequency": 4,
 				},
 				"left_down": {
-					"frames": [10, 11, 9],
+					"frames": [7, 8, 6],
 					"next": "left_down",
 					"frequency": 4,
 				},
 				"left": {
-					"frames": [7, 8, 6],
+					"frames": [13, 14, 12],
 					"next": "left",
 					"frequency": 4,
 				},
 				"left_up": {
-					"frames": [16, 17, 15],
+					"frames": [10, 11, 9],
 					"next": "left_up",
 					"frequency": 4,
 				},
 				"up": {
-					"frames": [13, 14, 12],
+					"frames": [10, 11, 9],
 					"next": "up",
 					"frequency": 4,
 				},
@@ -55,7 +55,7 @@ const ASSETS = {
 					"frequency": 4,
 				},
 				"right": {
-					"frames": [7, 8, 6],
+					"frames": [16, 17, 15],
 					"next": "right",
 					"frequency": 4,
 				}

@@ -9,7 +9,7 @@ phina.globalize();
 
 const SCREEN_WIDTH = 640;
 const SCREEN_HEIGHT = 960;
-const BACKGROUND_COLOR = "rgb(39, 146, 195)";
+const BACKGROUND_COLOR = "rgb(221, 220, 214)";
 
 phina.main(function() {
    var app = GameApp({

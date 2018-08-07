@@ -33,37 +33,44 @@ server.on("request", function(req, res){
 let io = require("socket.io").listen(server);
 
 
-let userList = {};
-
+let playerList = {};
 io.sockets.on("connection", function(socket){
 
-  socket.on("newConnection", function(relPosX, relPosY, dir){
-    //console.log("newConnection");
-
+  socket.on("newConnection", function(x, y, dir, isAnimating, isWalking){
     let id = socket.id;
-    let data = {id: socket.id, x: relPosX, y: relPosY, dir: dir};
-    io.to(socket.id).emit("newConTo", socket.id, userList);
-    userList[socket.id] = data;
+    let data = {
+      id: id,
+      x: x,
+      y: y,
+      dir: dir,
+      isAnimating: isAnimating,
+      isWalking: isWalking
+    };
+    io.to(id).emit("newConTo", id, playerList);
+    playerList[id] = data;
     socket.broadcast.emit("newConBroadcast", data);
   });
 
-
-  socket.on("updatePosition", function(relPosX, relPosY, dir){
-    //console.log("updatePosition");
-
-    userList[socket.id].x = relPosX;
-    userList[socket.id].y = relPosY;
-    userList[socket.id].dir = dir;
-    console.log(userList[socket.id]);
-    socket.broadcast.emit("updatePosition", userList[socket.id]);
+  socket.on("updateIsAnimating", function(boo, dir){
+    playerList[socket.id].isAnimating = boo;
+    playerList[socket.id].dir = dir;
+    socket.broadcast.emit("updateIsAnimating", playerList[socket.id]);
   });
 
+  socket.on("updateIsWalking", function(boo, nowX, nowY, nextX, nextY, dir){
+    let id = socket.id;
+    playerList[id].isWalking = boo;
+    playerList[id].dir = dir;
+    playerList[id].nextX = nextX;
+    playerList[id].nextY = nextY;
+    playerList[id].x = nowX;
+    playerList[id].y = nowY;
+    socket.broadcast.emit("updateIsWalking", playerList[id]);
+  });
 
   socket.on("disconnect", function(){
-    if(userList[socket.id]){ //if必要？
-      //console.log("disconnect");
-      socket.broadcast.emit("disconnected", socket.id);
-      delete userList[socket.id];
-    }
+    let id = socket.id;
+    delete playerList[id];
+    socket.broadcast.emit("disconnected", id);
   });
 });

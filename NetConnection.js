@@ -7,52 +7,78 @@
 //
 phina.define("NetConnection", {
 
-	userList: {},//except I
+	chaList: {},
 
 	init: function(map, myCha){
-		this.socketio = io.connect('160.16.113.105:3000');
+		this.socketio = io.connect('http://localhost:3000');
 		this.map = map;
 		this.myCha = myCha;
 		this._connect();
 	},
 
-	//以下、変数記述ちゃんとする
 	_connect: function(){
-		let relPos = this.myCha.getRelPosition();
-		this.socketio.emit("newConnection", relPos.x, relPos.y, this.myCha.dir);
+		let x = this.myCha.getRelPosition().x;
+		let y = this.myCha.getRelPosition().y;
+		let dir = this.myCha.getDirection();
+		let isAnimating = this.myCha.getIsAnimating();
+		let isWalking = this.myCha.getIsWalking();
 
-		this.socketio.on("newConTo", function(myId, userList){
+		this.socketio.emit("newConnection", x, y, dir, isAnimating, isWalking);
+
+		this.socketio.on("newConTo", function(myId, chaList){
 			this.myCha.id = myId;
-			for(let i in userList){
-				this.userList[userList[i].id] = userList[i];
-				this.userList[userList[i].id].cha = Character(this.map, this.userList[userList[i].id].x, this.userList[userList[i].id].y);
-				this.userList[userList[i].id].cha.addChildTo(this.map);
+			for(let i in chaList){
+				let cha = chaList[i];
+				this.chaList[cha.id] = cha;
+				cha.cha = Character(this.map, cha.x, cha.y, cha.dir);
+				cha.cha.addChildTo(this.map);
 			}
 		}.bind(this));
 
-		this.socketio.on("newConBroadcast", function(newChaData){
-			this.userList[newChaData.id] = newChaData;
-			this.userList[newChaData.id].cha = Character(this.map, this.userList[newChaData.id].x, this.userList[newChaData.id].y);
-			this.userList[newChaData.id].cha.addChildTo(this.map);
+		this.socketio.on("newConBroadcast", function(chaData){
+			let cha = chaData
+			this.chaList[cha.id] = cha;
+			cha.cha = Character(this.map, cha.x, cha.y, cha.dir);
+			cha.cha.addChildTo(this.map);
 		}.bind(this));
 
-		this.myCha.$watch("relPos", function(newPos, oldPos){
-			this.socketio.emit("updatePosition", newPos.x, newPos.y, this.myCha.dir);
+
+		this.myCha.$watch("isAnimating", function(newBoo, oldBoo){
+			this.socketio.emit("updateIsAnimating", newBoo, this.myCha.dir);
 		}.bind(this));
 
-		this.socketio.on("updatePosition", function(updatedChaData){
-				this.userList[updatedChaData.id].id = updatedChaData.id;
-				this.userList[updatedChaData.id].x = updatedChaData.x;
-				this.userList[updatedChaData.id].y = updatedChaData.y;
-				this.userList[updatedChaData.id].dir = updatedChaData.dir;
-				this.userList[updatedChaData.id].cha.walkNoLoop(updatedChaData.x, updatedChaData.y, updatedChaData.dir);
-
-
+		this.socketio.on("updateIsAnimating", function(chaData){
+			let id = chaData.id;
+			this.chaList[id].isAnimating = chaData.isAnimating;
+			this.chaList[id].dir = chaData.dir;
+			//
+			if(chaData.isAnimating) this.chaList[id].cha.animation(chaData.dir);
+			else this.chaList[id].cha.animationEnd();
 		}.bind(this));
 
-		this.socketio.on("disconnected", function(deleatedChaId){
-				this.map.removeChild(this.userList[deleatedChaId].cha);
-				delete this.userList[deleatedChaId];
+
+		this.myCha.$watch("isWalking", function(newBoo, oldBoo){
+			let nextRelPos = this.myCha.calcNextRelPosition(this.myCha.relPos, this.myCha.dir);
+			this.socketio.emit("updateIsWalking", newBoo, this.myCha.relPos.x, this.myCha.relPos.y, nextRelPos.x, nextRelPos.y, this.myCha.dir);
+		}.bind(this));
+
+		this.socketio.on("updateIsWalking", function(chaData){
+			let id = chaData.id;
+			this.chaList[id].dir = chaData.dir;
+			//
+			if(chaData.isWalking){
+				this.chaList[id].cha.walk(chaData.nextX, chaData.nextY);
+			}
+			else{
+				this.chaList[id].cha.relPos = Vector2(chaData.x, chaData.y);
+				this.chaList[id].cha.dir = chaData.dir;
+			}
+		}.bind(this));
+
+
+		this.socketio.on("disconnected", function(id){
+				this.map.removeChild(this.chaList[id].cha);
+				delete this.chaList[id];
 		}.bind(this));
 	}
 });
