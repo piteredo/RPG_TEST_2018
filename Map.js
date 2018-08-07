@@ -8,39 +8,41 @@
 phina.define('Map', {
 	superClass: 'DisplayElement',
 
-	MAP_CHIP_LENGTH: 20, //same this.MAP_CHIP_LENGTH as this.MAP_LAYOUT.
+	MAP_CHIP_LENGTH: 12, //same this.MAP_CHIP_LENGTH as this.MAP_LAYOUT.
 	MAP_LAYOUT: [
-		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-		[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+		[1,1,1,1,1,1,1,1,1,1,1,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,0,0,0,0,0,0,0,0,0,0,1],
+		[1,1,1,1,1,1,1,1,1,1,1,1],
 	],
-	MAP_CHIP_SIZE: 28, //X Y same
-	MAP_CHIP_PADDING: 2.5,
-	MAP_CHIP_FLOOR_COLOR: "rgb(180, 180, 180)",
-	MAP_CHIP_WALL_COLOR: "rgb(70, 70, 70)",
+	MAP_CHIP_WIDTH: 28 * 2,
+	MAP_CHIP_HEIGHT: 28,
+	MAP_CHIP_PADDING: 2.2,
+	MAP_CHIP_FLOOR_COLOR: {r:166, g:148, b:37, range:10},
+	MAP_CHIP_WALL_COLOR: {r:0, g:164, b:151, range:10},
 
 	init: function(){
 		this.superInit();
 
+		this.grid = this._createGrid();
 		this.map = this._createMap().addChildTo(this);
 	},
+
+	_createGrid: function(){
+    let grid = Grid({
+      width: Math.min( this.MAP_CHIP_WIDTH * this.MAP_CHIP_LENGTH , this.MAP_CHIP_HEIGHT * this.MAP_CHIP_LENGTH ),
+      columns: this.MAP_CHIP_LENGTH
+    });
+    return grid;
+  },
 
 	_createMap: function(){
 		let mapArr = DisplayElement();
@@ -50,12 +52,23 @@ phina.define('Map', {
 
 				let isWalkable = this._calcIsWalkable(this.MAP_LAYOUT[y][x]);
 				let mapChip = this._createMapChip(isWalkable);
-				let absX = this.MAP_CHIP_SIZE * x;
-				let absY = this.MAP_CHIP_SIZE * y;
-				mapChip.absPos = Vector2(absX, absY);
+
+				let ratio = this.MAP_CHIP_WIDTH.ratio(this.MAP_CHIP_HEIGHT);
+		    let ratio_w = ratio[0];
+		    let ratio_h = ratio[1];
+
+				let absX = this.grid.span(x);
+				let absY = this.grid.span(y);
 				mapChip.relPos = Vector2(x, y);
+
+				let pos_qua = mapChip.relPos.toQuarter( ratio_w , ratio_h );
+				let xx = this.grid.span( pos_qua.x );
+    		let yy = this.grid.span( pos_qua.y );
+
+				mapChip.absPos = Vector2(xx, yy);
+
 				mapChip.isWalkable = isWalkable;
-				mapChip.setPosition(absX, absY);
+				mapChip.setPosition(xx, yy);
 				mapChip.addChildTo(tempArr);
 
 			}.bind(this));
@@ -76,6 +89,7 @@ phina.define('Map', {
 		return mapChip;
 	},
 
+	/*
 	_createMapChipShape: function(){
 		let mapChip = DisplayElement();
 		let shape = RectangleShape({
@@ -86,18 +100,50 @@ phina.define('Map', {
 		//shape.setOrigin(0.5, 0.5);
 		return shape;
 	},
+	*/
+
+	_createMapChipShape: function(){
+		let mapChip = DisplayElement();
+		let w = this.MAP_CHIP_WIDTH;
+		let h = this.MAP_CHIP_HEIGHT;
+		let p = this.MAP_CHIP_PADDING;
+		let shape = PathShape({ stroke: null })
+      .addPath(0, (-h / 2) + p)
+      .addPath((w / 2) - p , 0)
+      .addPath(0, (h / 2) - p)
+      .addPath((-w / 2) + p, 0)
+      .addPath(0, (-h / 2) + p);
+		  //origin: 0.5, 0.5
+		return shape;
+	},
 
 	_attachMapChipColor: function(mapChip, isWalkable){
-		if(isWalkable) mapChip.fill = this.MAP_CHIP_FLOOR_COLOR;
-		else mapChip.fill = this.MAP_CHIP_WALL_COLOR;
+		let c = null;
+		if(isWalkable) c = this.MAP_CHIP_FLOOR_COLOR;
+		else c = this.MAP_CHIP_WALL_COLOR;
+
+    var r = c.r;
+    var g = c.g;
+    var b = c.b;
+    var range = c.range || 0;
+    var rn_a = (3).map(function(){
+      return Math.randint( -range , range );
+    });
+    let color = "rgb({r},{g},{b})".format({
+      r: r + rn_a[0],
+      g: g + rn_a[1],
+      b: b + rn_a[2]
+    });
+
+    mapChip.fill = color;
 	},
 
-	getMapSize: function(){
-		return this.MAP_CHIP_SIZE * this.MAP_CHIP_LENGTH;
+	getMapHeight: function(){
+		return this.MAP_CHIP_HEIGHT * this.MAP_CHIP_LENGTH;
 	},
 
-	getMapChipSize: function(){
-		return this.MAP_CHIP_SIZE;
+	getMapChipHeight: function(){
+		return this.MAP_CHIP_HEIGHT;
 	},
 
 	getAbsPosition: function(relPosX, relPosY){
@@ -112,3 +158,25 @@ phina.define('Map', {
 		return this.map.children[relPosY].children[relPosX].isWalkable;
 	}
 });
+
+
+Number.prototype.$method("ratio", function(value){
+  var self = target = 1;
+  if(this > value) self = this / value;
+  else target = value / this;
+  return [self , target];
+});
+
+
+phina.geom.Vector2.prototype.toQuarter = function(ratio_w , ratio_h){
+  var w = ratio_w;
+  var h = ratio_h
+  var vx_x = w/2;
+	var vx_y = h/2;
+	var vy_x = w/2 * -1;
+	var vy_y = h/2;
+	var x = (this.x * vx_x) + (this.y * vy_x);
+	var y = (this.x * vx_y) + (this.y * vy_y);
+	var pos = {x: x , y: y};
+	return pos;
+};

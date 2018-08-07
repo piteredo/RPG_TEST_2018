@@ -16,7 +16,7 @@ phina.define('Character', {
 
 	init: function(map, x, y){
 		this.superInit("tomapiko", 64, 64);
-		this.setOrigin(0.5, 0.9);
+		this.setOrigin(0.5, 0.96);
 		this.anim = FrameAnimation("tomapiko_ss").attachTo(this);
 		this.map = map;
 		this.relPos = Vector2(x, y);
@@ -56,12 +56,15 @@ phina.define('Character', {
 		this._updateAnimationDirection(this.dir);
 
 		if(posIsWalkable){
+			let speed = this.WALK_SPEED;
+			if(this.dir == "right" || this.dir == "left") speed *= 2;
+
 			let nextAbsPos = this._getAbsPosition(nextRelPos.x, nextRelPos.y);
 			this.tweener.clear()
 	      .to({
 	        x: nextAbsPos.x,
 	        y: nextAbsPos.y
-	      }, this.WALK_SPEED )
+	      }, speed )
 	      .call(function(){
 					this.relPos = nextRelPos;
 	        this.isWalking = false;
@@ -82,12 +85,15 @@ phina.define('Character', {
 		this.dir = dir;
 
 		//if(posIsWalkable){
+			let speed = this.WALK_SPEED;
+			if(this.dir == "right" || this.dir == "left") speed *= 2;
+
 			let nextAbsPos = this._getAbsPosition(nextRelPosX, nextRelPosY);
 			this.tweener.clear()
 	      .to({
 	        x: nextAbsPos.x,
 	        y: nextAbsPos.y
-	      }, this.WALK_SPEED )
+	      }, speed )
 	      .call(function(){
 					this.relPos = Vector2(nextRelPosX, nextRelPosY);
 					this._animationEnd();
@@ -106,16 +112,29 @@ phina.define('Character', {
 	},
 
 	_getAddPosition: function(dir){
+		console.log(dir);
 		let addPos = Vector2.ZERO;
 		switch(dir){
-			case "up":
-				addPos = Vector2.UP;
+			case "right_down":
+				addPos = Vector2.RIGHT_DOWN;
 				break;
 			case "down":
 				addPos = Vector2.DOWN;
 				break;
+			case "left_down":
+				addPos = Vector2.LEFT_DOWN;
+				break;
 			case "left":
 				addPos = Vector2.LEFT;
+				break;
+			case "left_up":
+				addPos = Vector2.LEFT_UP;
+				break;
+			case "up":
+				addPos = Vector2.UP;
+				break;
+			case "right_up":
+				addPos = Vector2.RIGHT_UP;
 				break;
 			case "right":
 				addPos = Vector2.RIGHT;

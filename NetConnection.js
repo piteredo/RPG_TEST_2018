@@ -10,7 +10,7 @@ phina.define("NetConnection", {
 	userList: {},//except I
 
 	init: function(map, myCha){
-		this.socketio = io.connect('http://localhost:3000');
+		this.socketio = io.connect('160.16.113.105:3000');
 		this.map = map;
 		this.myCha = myCha;
 		this._connect();

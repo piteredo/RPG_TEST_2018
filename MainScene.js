@@ -28,16 +28,12 @@ phina.define('MainScene', {
 	},
 
 	_displayMap: function(parent){
-		let mapSize = this.map.getMapSize();
-		let mapChipSize = this.map.getMapChipSize();
-		let posX = this._calcCenterPosition(mapSize, mapChipSize, SCREEN_WIDTH);
-		let posY = this._calcCenterPosition(mapSize, mapChipSize, SCREEN_HEIGHT) - 150;
+		let mapHeight = this.map.getMapHeight();
+		let mapChipHeight = this.map.getMapChipHeight();
+		let posX = SCREEN_WIDTH / 2;
+		let posY = SCREEN_HEIGHT / 2 - mapHeight / 2 + mapChipHeight / 2;
 		this.map.setPosition(posX, posY);
 		this.map.addChildTo(parent);
-	},
-
-	_calcCenterPosition: function(mapSize, mapChipSize, scereenSize){
-		return (scereenSize / 2) - (mapSize / 2) + (mapChipSize /2); //汎用化する or 不要？
 	},
 
 	_displayCharacter: function(parent, map){
