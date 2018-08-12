@@ -1,48 +1,10 @@
 //
 //
-// Controller.js
+// phina.extention.js
 // 2018 @auther piteredo
 // This Program is MIT license.
 //
 //
-phina.define("Controller", {
-	superClass: "CircleShape",
-
-	init: function(target) {
-		this.superInit({
-			radius: 187.5/2,
-			fill: null,
-			stroke: "rgb(200, 200, 190)",
-			strokeWidth: 10
-		});
-
-		this.target = target; //target for send point msg.
-
-		this.setInteractive(true);
-		this.on('pointstart', function(e){ this._pointStart(e) }.bind(this));
-		this.on('pointmove', function(e){	this._pointMove(e)	}.bind(this));
-		this.on('pointend', function(e){ this._pointEnd(e) }.bind(this));
-	},
-
-	_pointStart: function(e){
-		this.target.pointStart(this._getDirection(e));
-	},
-
-	_pointMove: function(e){
-		this.target.pointMove(this._getDirection(e));
-	},
-
-	_pointEnd: function(e){
-		this.target.pointEnd(this._getDirection(e));
-	},
-
-	_getDirection: function(e){
-		let centerPos = Vector2(this.x, this.y);
-		let pointedPos = Vector2(e.pointer.x, e.pointer.y);
-		return pointedPos.sub(centerPos).getDirection(); // 8 way
-	}
-});
-
 
 //extention of phina.js(4 way -> 8 way)
 phina.geom.Vector2.prototype.getDirection = function(){
@@ -66,3 +28,19 @@ phina.geom.Vector2.LEFT = phina.geom.Vector2(-1, 1);
 phina.geom.Vector2.LEFT_UP = phina.geom.Vector2(-1, 0);
 phina.geom.Vector2.UP = phina.geom.Vector2(-1, -1);
 phina.geom.Vector2.RIGHT_UP = phina.geom.Vector2(0, -1);
+
+/*
+// relative(local) pos -> abusolute(global) pos
+phina.display.DisplayElement.prototype.relPosToAbsPos = function(rpX, rpY){
+  /*const ROOT_OBJ_NAME = "MainScene";
+  let childObj = this;
+  let result = Vector2(rpX, rpY);
+  let i = 0;
+  while(childObj.parent.className != ROOT_OBJ_NAME){
+    result.add(childObj.parent.position);
+    childObj = childObj.parent;
+    i++;
+    if(i>100) break;
+  }
+  return result;
+}*/

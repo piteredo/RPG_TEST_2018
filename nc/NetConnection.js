@@ -9,10 +9,11 @@ phina.define("NetConnection", {
 
 	chaList: {},
 
-	init: function(map, myCha){
+	init: function(map, myCha, layerSet){
 		this.socketio = io.connect('http://localhost:3000');
 		this.map = map;
 		this.myCha = myCha;
+		this.layerSet = layerSet;
 		this._connect();
 	},
 
@@ -31,7 +32,7 @@ phina.define("NetConnection", {
 				let cha = chaList[i];
 				this.chaList[cha.id] = cha;
 				cha.cha = Character(this.map, cha.x, cha.y, cha.dir);
-				cha.cha.addChildTo(this.map);
+				this.layerSet.childToMainLayer(cha.cha);
 			}
 		}.bind(this));
 
@@ -39,7 +40,7 @@ phina.define("NetConnection", {
 			let cha = chaData
 			this.chaList[cha.id] = cha;
 			cha.cha = Character(this.map, cha.x, cha.y, cha.dir);
-			cha.cha.addChildTo(this.map);
+			this.layerSet.childToMainLayer(cha.cha);
 		}.bind(this));
 
 
@@ -77,7 +78,7 @@ phina.define("NetConnection", {
 
 
 		this.socketio.on("disconnected", function(id){
-				this.map.removeChild(this.chaList[id].cha);
+				this.layerSet.removeChildMainLayer(this.chaList[id].cha);
 				delete this.chaList[id];
 		}.bind(this));
 	}

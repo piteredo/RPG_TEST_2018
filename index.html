@@ -12,17 +12,29 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
 
-		<title>SOCKET.IO_PHINA.JS_TEST</title>
+		<title>SOCKET.IO+PHINA.JS RPG</title>
 
 		<script src="https://rawgit.com/phinajs/phina.js/v0.2.3/build/phina.js"></script>
-		<script src="socket.io/socket.io.js"></script>
+		<!--<script src="socket.io/socket.io.js"></script>-->
 		<script src="assets.js"></script>
 		<script src="Main.js"></script>
-		<script src="MainScene.js"></script>
-		<script src="NetConnection.js"></script>
-		<script src="Map.js"></script>
-		<script src="Character.js"></script>
-		<script src="Controller.js"></script>
+		<script src="scene/MainScene.js"></script>
+		<script src="nc/NetConnection.js"></script>
+		<script src="layer/LayerSet.js"></script>
+		<script src="layer/Layer.js"></script>
+		<script src="layer/MapLayer.js"></script>
+		<script src="layer/MainLayer.js"></script>
+		<script src="layer/UiLayer.js"></script>
+		<script src="map/Map.js"></script>
+		<script src="map/Tile.js"></script>
+		<script src="character/Player.js"></script>
+		<script src="character/Enemy.js"></script>
+		<script src="ui/Ui.js"></script>
+		<script src="ui/Controller.js"></script>
+		<script src="camera/Camera.js"></script>
+		<script src="camera/ViewPort.js"></script>
+		<script src="extention/Astar.js"></script>
+		<script src="extention/phina.extention.js"></script>
 	</head>
 	<body>
 		<canvas id="world"></canvas>

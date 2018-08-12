@@ -5,6 +5,8 @@
 // This Program is MIT license.
 //
 //
+//let Enemy = require("./Enemy.js");
+
 let fs = require("fs");
 let http = require("http");
 let server = http.createServer();
@@ -38,6 +40,7 @@ let timer;
 io.sockets.on("connection", function(socket){
 
   //ちゃんとする
+  /*
   let count = 1;
   function npcWalk(){
     let dirArr = [
@@ -72,7 +75,19 @@ io.sockets.on("connection", function(socket){
     playerList["degsfhxzfght"] = npcData;
     timer = setInterval(npcWalk, 1000);
   }
-
+  */
+  if(Object.keys(playerList).length == 0){
+    let d = {
+      id: "degsfhxzfght",
+      x: 8,
+      y: 4,
+      dir: "down",
+      isAnimating: false,
+      isWalking: false
+    };
+    let enemy = new Enemy();
+    //console.log(enemy.getName());
+  }
 
   socket.on("newConnection", function(x, y, dir, isAnimating, isWalking){
     let id = socket.id;
