@@ -10,6 +10,7 @@ phina.define('Tile', {
 
 	TILE_FLOOR_COLOR: {r:166, g:148, b:37, range:10},
 	TILE_WALL_COLOR: {r:82, g:78, b:77, range:10},
+	existPlayerList: [],
 
 	init: function(width, height, padding, tp, type, isWalkable){ //type: 0 or 1
 		this.superInit();
@@ -50,6 +51,27 @@ phina.define('Tile', {
     let g = colorDataList.g + Math.randint(-range, range);
     let b = colorDataList.b + Math.randint(-range, range);
     return "rgb({r},{g},{b})".format({r:r, g:g, b:b});
+	},
+
+	addExistPlayer: function(playerObj){
+		this.existPlayerList.push(playerObj);
+	},
+
+	removeExistPlayer: function(playerObj){
+		(this.existPlayerList.length).times(function(i){
+			let playerOfList = this.existPlayerList[i];
+			if(playerOfList.uuid == playerObj.uuid) this.existPlayerList.splice(i, 1);
+		}.bind(this));
+	},
+
+	searchExistPlayerList: function(tpX, tpY){
+		let playerObj = null;
+		(this.existPlayerList.length).times(function(i){
+			let playerOfList = this.existPlayerList[i];
+			if(playerOfList.tp.equals(Vector2(tpX, tpY))) playerObj = playerOfList;
+		}.bind(this));
+		if(playerObj) return playerObj;
+		return false;
 	},
 
 	getWidth: function(){

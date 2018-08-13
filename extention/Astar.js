@@ -11,15 +11,14 @@ phina.define('Astar', {
 	closeList : [],
 	routeList : [],
 
-	init: function(tileLength){
-		this.tileLength = tileLength;
-	},
+	init: function(){},
 
-	calcAStar: function(startTile, goalTile, mapArr){
+	calcAStar: function(startTile, goalTile, mapArr, tileLength){
 		// startTile  Vector2(int: tilePosX, int: tilePosY)
 		// goalTile  Vector2(int: tilePosX, int: tilePosY)
 		// mapArr  Array[boolean: isWalkable][boolean: isWalkable]
-		if(!this._checkArguments(startTile, goalTile, mapArr)) return false;
+		// tileLength int (x y same)
+		if(!this._checkArguments(startTile, goalTile, mapArr, tileLength)) return false;
 		this._initData(mapArr);
 
 		startTile.fStar = this._hStar(startTile, goalTile);
@@ -40,7 +39,7 @@ phina.define('Astar', {
 			this.openList.shift();
 			this.closeList.push(minFStarTile);
 
-			let walkableNeighborTileArr = this._calcWalkableNeighborTile(minFStarTile , mapArr);
+			let walkableNeighborTileArr = this._calcWalkableNeighborTile(minFStarTile , mapArr, tileLength);
 
 			for(let i=0; i<walkableNeighborTileArr.length; i++){
 
@@ -105,8 +104,8 @@ phina.define('Astar', {
 		return this.routeList;
 	},
 
-	_checkArguments: function(startTile , goalTile , mapArr){
-		if(!startTile || !goalTile || !mapArr) return false;
+	_checkArguments: function(startTile , goalTile , mapArr, tileLength){
+		if(!startTile || !goalTile || !mapArr || !tileLength) return false;
 		return true;
 	},
 
@@ -128,7 +127,7 @@ phina.define('Astar', {
 		return distX + distY;
 	},
 
-	_calcWalkableNeighborTile: function(minFStarTile , mapArr){
+	_calcWalkableNeighborTile: function(minFStarTile , mapArr, tileLength){
 		let walkableNeighborTileArr = [];
 		let dirCount = 8; // same as neighbor list
 		let neighborXArr = [-1, 0, 1, -1, 1, -1, 0, 1];
@@ -139,7 +138,7 @@ phina.define('Astar', {
 		for(let i=0; i<dirCount; i++){
 			let newX = oldX + neighborXArr[i];
 			let newY = oldY + neighborYArr[i];
-			if(newX<0 || newY<0 || newX>=this.tileLength || newY>=this.tileLength) continue;
+			if(newX<0 || newY<0 || newX>=tileLength || newY>=tileLength) continue;
 			if(mapArr[newY][newX]) walkableNeighborTileArr.push( Vector2(newX, newY) );
 		}
 		return walkableNeighborTileArr;
