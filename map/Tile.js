@@ -10,7 +10,6 @@ phina.define('Tile', {
 
 	TILE_FLOOR_COLOR: {r:166, g:148, b:37, range:10},
 	TILE_WALL_COLOR: {r:82, g:78, b:77, range:10},
-	existPlayerList: [],
 
 	init: function(width, height, padding, tp, type, isWalkable){ //type: 0 or 1
 		this.superInit();
@@ -19,7 +18,10 @@ phina.define('Tile', {
 		this.padding = padding;
 		this.tp = tp;
 		this.isWalkable = isWalkable;
+		this.visible = false;
 		this._createTile(type).addChildTo(this);
+
+		this.existPlayerList = [];
 	},
 
 	_createTile: function(type){
@@ -58,10 +60,15 @@ phina.define('Tile', {
 	},
 
 	removeExistPlayer: function(playerObj){
-		(this.existPlayerList.length).times(function(i){
+		for(let i=0; i<this.existPlayerList.length; i++){
 			let playerOfList = this.existPlayerList[i];
-			if(playerOfList.uuid == playerObj.uuid) this.existPlayerList.splice(i, 1);
-		}.bind(this));
+			if(i>0) console.log("i:", i,"------------------------------");
+			if(playerOfList == undefined) continue; //１マスに２人いるとループ二周してundefinedでとまるの直す？
+			//console.log("playerObj:",playerObj.tp,playerObj.uuid);
+			//console.log("playerOfList:",playerOfList.tp,playerOfList.uuid);
+			//console.log("-----");
+			else if(playerOfList.uuid == playerObj.uuid) this.existPlayerList.splice(i, 1);
+		};
 	},
 
 	searchExistPlayerList: function(tpX, tpY){

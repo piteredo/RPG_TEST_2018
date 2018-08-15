@@ -45,8 +45,15 @@ phina.define('MainScene', {
 	},
 
 	_initEnemys: function(){
-		this.enemy = Enemy(this.map, 10, 10);
-		this.layerSet.childToMainLayer(this.enemy);
+		//this.enemy = Enemy(this.map, 10, 10);
+		//this.layerSet.childToMainLayer(this.enemy);
+
+		let e1 = Enemy(this.map, Math.randint(0, 10), Math.randint(0, 10));
+		this.layerSet.childToMainLayer(e1);
+		let e2 = Enemy(this.map, Math.randint(0, 10), Math.randint(0, 10));
+		this.layerSet.childToMainLayer(e2);
+		let e3 = Enemy(this.map, Math.randint(0, 10), Math.randint(0, 10));
+		this.layerSet.childToMainLayer(e3);
 	},
 
 	_initUi: function(){
@@ -55,7 +62,7 @@ phina.define('MainScene', {
 	},
 
 	_initCamera: function(){
-		this.camera = Camera(this.layerSet, this.myPlayer);
+		this.camera = Camera(this.layerSet, this.myPlayer).addChildTo(this);
 	},
 
 	//_initNetConnection: function(){

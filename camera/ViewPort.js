@@ -180,6 +180,7 @@ phina.define('ViewPort', {
 			let newTile = newVisibleTileList[i];
 			if(!dupOfNewList.contains(newTile)){
 				this.mapLayer.child(newTile);
+				this.mapLayer.updateChildVisibility(newTile, true);
 			}
 		}.bind(this));
 
@@ -187,6 +188,7 @@ phina.define('ViewPort', {
 		(this.visibleTileList.length).times(function(i){
 			let oldTile = this.visibleTileList[i];
 			if(!dupOfOldList.contains(oldTile)){
+				this.mapLayer.updateChildVisibility(oldTile, false);
 				this.mapLayer.remove(oldTile);
 			}
 		}.bind(this));

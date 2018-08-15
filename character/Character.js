@@ -8,7 +8,6 @@
 phina.define('Character', {
 	superClass: 'Sprite',
 
-	uuid: Random.uuid(), //暫定位置
 	SPRITE_NAME: "tomapiko",
 	WIDTH: 64,
 	HEIGHT: 64,
@@ -25,14 +24,15 @@ phina.define('Character', {
 		this.superInit(this.SPRITE_NAME, this.WIDTH, this.HEIGHT);
 		this.setOrigin(this.ORIGIN_X, this.ORIGIN_Y);
 		this._setMapData(map);
-		this._setPositions(tpX, tpY);
 		this._setDirection(dir);
 		this._initFrameIndex();
+
+		this.uuid = Random.uuid(); //暫定位置
 	},
 
 	_setMapData: function(map){
 		this.map = map;
-	},	
+	},
 
 	_addMapTileExistList: function(tpX, tpY){
 		let tile = this.map.getTile(tpX, tpY);

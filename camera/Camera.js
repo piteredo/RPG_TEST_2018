@@ -6,12 +6,14 @@
 //
 //
 phina.define('Camera', {
+	superClass: 'DisplayElement',
 
 	SCREEN_CENTER_X: SCREEN_WIDTH / 2,
 	SCREEN_CENTER_Y: SCREEN_HEIGHT / 2,
 	VIEWPORT_PADDING: 100,
 
 	init: function(layerSet, targetObj){
+		this.superInit();
 		this._initLayerData(layerSet);
 		this._initTargetObj(targetObj);
 		this._initPosition();
@@ -27,6 +29,18 @@ phina.define('Camera', {
 		this._watchTargetPosition();
 		this._createViewportFrameForDebug();
 	},
+
+
+	//暫定
+	update: function(){
+		(this.mainLayer.children.length).times(function(i){
+			let obj = this.mainLayer.children[i];
+			let tileVisible = this.mapLayer.getTile(obj.tp.x, obj.tp.y).visible;
+			if(tileVisible != obj.visible) this.mapLayer.updateChildVisibility(obj, tileVisible);
+		}.bind(this));
+	},
+
+
 
 	_initLayerData: function(layerSet){
 		this.mapLayer = layerSet.getMapLayer();

@@ -10,6 +10,7 @@ phina.define('Player', {
 
 	init: function(map, tpX, tpY, dir){
 		this.superInit(map, tpX, tpY, dir);
+		this._setPositions(tpX, tpY);
 	},
 
 	_setPositions: function(tpX, tpY){

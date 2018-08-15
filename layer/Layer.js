@@ -20,6 +20,11 @@ phina.define('Layer', {
 		this.removeChild(obj);
 	},
 
+	updateChildVisibility: function(childObj, boo){
+		//検索しなくて良いのか？
+		childObj.visible = boo;
+	},
+
 	getRelPos: function(){
 		return this.position;
 	},

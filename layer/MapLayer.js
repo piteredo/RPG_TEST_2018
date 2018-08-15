@@ -27,4 +27,8 @@ phina.define('MapLayer', {
 	getTileLength: function(){
 		return this.map.getTileLength();
 	},
+
+	getTile: function(tpX, tpY){
+		return this.map.getTile(tpX, tpY);
+	}
 });

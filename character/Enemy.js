@@ -16,10 +16,11 @@ phina.define('Enemy', {
 	TIMER_RANGE_MAX: 7,
 	WALK_SPEED: 700, // ms
 	CHASE_SPEED: 400,
-	SEARCH_AREA_RANGE: 5,
+	SEARCH_AREA_RANGE: 3,
 
 	init: function(map, tpX, tpY, dir){
 		this.superInit(map, tpX, tpY, dir);
+		this._setPositions(tpX, tpY);
 
     this.astar = Astar();
     this._setRandomTimer();
@@ -28,6 +29,9 @@ phina.define('Enemy', {
 	_setPositions: function(tpX, tpY){
 		this._setTilePos(tpX, tpY);
 		this._setRelPos(tpX, tpY);
+
+
+		this._addMapTileExistList(tpX, tpY);
 	},
 
   _setRandomTimer: function(){
@@ -81,6 +85,12 @@ phina.define('Enemy', {
 
 	_actBattleMode: function(){
 		console.log("attack!");
+
+
+		this.isInBattleMode = false; //暫定
+		this.isInChaseMode = true;
+
+
 		setTimeout(this._startAction.bind(this), 1000);
 	},
 
@@ -105,13 +115,34 @@ phina.define('Enemy', {
 				y: nextRp.y
 			}, speedPerDir )
 			.call(function(){
+
+
+				this._removeMapTileExistList(this.tp.x, this.tp.y);
 				this.tp = Vector2(x, y);
+				this._addMapTileExistList(x, y);
+
+
 				this.isWalking = false;
 				routeList.shift();
-				if(routeList.length > 0){
+				if(routeList.length > 1){
 					let dir = routeList[0].parentObj.dir; // なぜ parentObj?
 					this.animation(dir);
 					this.walk(routeList, speed);
+				}
+				else if(routeList.length == 1){ //暫定
+					if(this.isInChaseMode || this.isInBattleMode){
+						this.animationEnd(this.dir);
+
+						this.isInChaseMode = false;
+						this.isInBattleMode = true; //暫定 updateでバトルモードになる前にchaseモードがもう１回呼ばれてwalkの最上の１回目の移動が呼ばれてします
+
+						this._startAction();
+					}
+					else{
+						let dir = routeList[0].parentObj.dir; // なぜ parentObj?
+						this.animation(dir);
+						this.walk(routeList, speed);
+					}
 				}
 				else{
 					this.animationEnd(this.dir);
@@ -131,41 +162,50 @@ phina.define('Enemy', {
 	},
 
 	update: function(){
-    if(!this.isInChaseMode && !this.isInBattleMode){
+		let tileLength = this.map.getTileLength();
+
+		//else if(!this.isInBattleMode){
+      for(let y=this.tp.y-1; y<=this.tp.y+1; y++){
+        for(let x=this.tp.x-1; x<=this.tp.x+1; x++){
+          if(y<0 || x<0 || x>=tileLength || y>=tileLength) continue;
+
+					let tile = this.map.getTile(x, y);
+					let player = tile.searchExistPlayerList(x, y);
+					if(player == this) continue;
+					if(player){
+						//console.log("battle mode");
+						//this.target = player;
+						this.isInBattleMode = true;
+						this.isInChaseMode = false;
+					}
+					//else if(this.isInBattleMode) this.isInBattleMode = false;
+        }
+      }
+    //}
+
+		let player = undefined;
+    if(!this.isInBattleMode){
 			let seachAreaYMin = this.tp.y - this.SEARCH_AREA_RANGE;
 			let seachAreaYMax = this.tp.y + this.SEARCH_AREA_RANGE;
 			let seachAreaXMin = this.tp.x - this.SEARCH_AREA_RANGE;
 			let seachAreaXMax = this.tp.x + this.SEARCH_AREA_RANGE;
       for(let y=seachAreaYMin; y<=seachAreaYMax; y++){
         for(let x=seachAreaXMin; x<=seachAreaXMax; x++){
-          if(y<this.areaMin || x<this.areaMin || y>this.areaMax || x>this.areaMax) continue;
+          if(y<0 || x<0 || x>=tileLength || y>=tileLength) continue;
 
 					let tile = this.map.getTile(x, y);
-					let player = tile.searchExistPlayerList(x, y);
+					player = tile.searchExistPlayerList(x, y);
+					if(player == this) continue;
 					if(player){
-						console.log("chase mode");
+						//console.log("chase mode");
 						this.target = player;
 						this.isInBattleMode = false;
 						this.isInChaseMode = true;
 					}
+					//else if(this.isInChaseMode) this.isInChaseMode = false;
         }
       }
     }
-    else if(!this.isInBattleMode){
-      for(let y=this.tp.y-1; y<=this.tp.y+1; y++){
-        for(let x=this.tp.x-1; x<=this.tp.x+1; x++){
-          if(y<this.areaMin || x<this.areaMin || y>this.areaMax || x>this.areaMax) continue;
-
-					let tile = this.map.getTile(x, y);
-					let player = tile.searchExistPlayerList(x, y);
-					if(player){
-						console.log("battle mode");
-						//this.target = player;
-						this.isInBattleMode = true;
-						this.isInChaseMode = false;
-					}
-        }
-      }
-    }
+		else if(player == "undefined"){this.isInChaseMode = false;}
 	}
 });
