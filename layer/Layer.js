@@ -14,15 +14,12 @@ phina.define('Layer', {
 
 	child: function(obj){
 		obj.addChildTo(this);
+		obj.setVisible(true);
 	},
 
 	remove: function(obj){
+		obj.setVisible(false);
 		this.removeChild(obj);
-	},
-
-	updateChildVisibility: function(childObj, boo){
-		//検索しなくて良いのか？
-		childObj.visible = boo;
 	},
 
 	getRelPos: function(){

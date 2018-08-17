@@ -8,77 +8,38 @@
 phina.define('Tile', {
 	superClass: 'DisplayElement',
 
-	TILE_FLOOR_COLOR: {r:166, g:148, b:37, range:10},
-	TILE_WALL_COLOR: {r:82, g:78, b:77, range:10},
-
-	init: function(width, height, padding, tp, type, isWalkable){ //type: 0 or 1
+	init: function(width, height, padding, tp, isWalkable, color){
 		this.superInit();
+
 		this.width = width;
 		this.height = height;
-		this.padding = padding;
 		this.tp = tp;
 		this.isWalkable = isWalkable;
-		this.visible = false;
-		this._createTile(type).addChildTo(this);
-
-		this.existPlayerList = [];
+		this._createTile(color, padding).addChildTo(this);
 	},
 
-	_createTile: function(type){
-		let tile = this._createShape();
-		tile.fill = this._calcColor(type);
+	_createTile: function(color, padding){
+		let tile = this._createShape(padding);
+		this._attachColor(tile, color);
 		return tile;
 	},
 
-	_createShape: function(){
+	_createShape: function(padding){
 		let w = this.width;
 		let h = this.height;
-		let p = this.padding;
-		return PathShape({ stroke: null }) // origin: 0.5, 0.5
-      .addPath(0 , (-h/2)+p)
-      .addPath((w/2)-p , 0)
-      .addPath(0 , (h/2)-p)
-      .addPath((-w/2)+p , 0)
-      .addPath(0 , (-h/2)+p);
+		let p = padding;
+		return PathShape({  // origin: 0.5, 0.5
+			stroke: null
+		})
+    .addPath(0 , (-h/2)+p)
+    .addPath((w/2)-p , 0)
+    .addPath(0 , (h/2)-p)
+    .addPath((-w/2)+p , 0)
+    .addPath(0 , (-h/2)+p);
 	},
 
-	_calcColor: function(type){
-		let colorDataList = null;
-		switch(type){
-			case 0: colorDataList = this.TILE_FLOOR_COLOR; break;
-			case 1:	colorDataList = this.TILE_WALL_COLOR; break;
-		}
-		let range = colorDataList.range || 0;
-    let r = colorDataList.r + Math.randint(-range, range);
-    let g = colorDataList.g + Math.randint(-range, range);
-    let b = colorDataList.b + Math.randint(-range, range);
-    return "rgb({r},{g},{b})".format({r:r, g:g, b:b});
-	},
-
-	addExistPlayer: function(playerObj){
-		this.existPlayerList.push(playerObj);
-	},
-
-	removeExistPlayer: function(playerObj){
-		for(let i=0; i<this.existPlayerList.length; i++){
-			let playerOfList = this.existPlayerList[i];
-			if(i>0) console.log("i:", i,"------------------------------");
-			if(playerOfList == undefined) continue; //１マスに２人いるとループ二周してundefinedでとまるの直す？
-			//console.log("playerObj:",playerObj.tp,playerObj.uuid);
-			//console.log("playerOfList:",playerOfList.tp,playerOfList.uuid);
-			//console.log("-----");
-			else if(playerOfList.uuid == playerObj.uuid) this.existPlayerList.splice(i, 1);
-		};
-	},
-
-	searchExistPlayerList: function(tpX, tpY){
-		let playerObj = null;
-		(this.existPlayerList.length).times(function(i){
-			let playerOfList = this.existPlayerList[i];
-			if(playerOfList.tp.equals(Vector2(tpX, tpY))) playerObj = playerOfList;
-		}.bind(this));
-		if(playerObj) return playerObj;
-		return false;
+	_attachColor: function(tile, color){
+		tile.fill = color;
 	},
 
 	getWidth: function(){

@@ -8,15 +8,25 @@
 phina.define('Player', {
 	superClass: 'Character',
 
-	init: function(map, tpX, tpY, dir){
-		this.superInit(map, tpX, tpY, dir);
-		this._setPositions(tpX, tpY);
-	},
+	SPRITE_NAME: "tomapiko",
+	SPRITE_SHEET_NAME: "tomapiko_ss",
+	WIDTH: 64,
+	HEIGHT: 64,
+	ORIGIN_X: 0.5,
+	ORIGIN_Y: 0.96,
+	WALK_SPEED: 300, // ms
 
-	_setPositions: function(tpX, tpY){
-		this._setTilePos(tpX, tpY);
-		this._setRelPos(tpX, tpY);
-		this._addMapTileExistList(tpX, tpY);
+	init: function(map, tpX, tpY, dir){
+		this.superInit(
+			map,
+			tpX,
+			tpY,
+			this.SPRITE_NAME,
+			this.SPRITE_SHEET_NAME,
+			this.WIDTH, this.HEIGHT,
+			this.ORIGIN_X,
+			this.ORIGIN_Y
+		);
 	},
 
 	// LOOP
@@ -32,7 +42,7 @@ phina.define('Player', {
 	},
 
 	pointMove: function(dir){
-		this._setDirection(dir);
+		this.dir = dir;
 		this.animation(dir);
 	},
 
@@ -40,21 +50,51 @@ phina.define('Player', {
 		this.isWalkable = false;
 	},
 
+	_walkLoop: function(){
+		if(!this.isWalking){
+			this.animation(this.dir);
+			let nextTp = this._calcNextRelPosition(this.tp, this.dir);
+			if(this._checkPosIsWalkable(nextTp.x, nextTp.y)) this.walk(nextTp.x, nextTp.y);
+		}
+	},
+
+	_calcNextRelPosition: function(oldPos, dir){
+		let addPos = this._getAddPosition(dir);
+		return oldPos.clone().add(addPos);
+	},
+
+	_getAddPosition: function(dir){
+		let addPos = Vector2.ZERO;
+		switch(dir){
+			case "right_down": addPos = Vector2.RIGHT_DOWN; break;
+			case "down": addPos = Vector2.DOWN; break;
+			case "left_down":	addPos = Vector2.LEFT_DOWN;	break;
+			case "left": addPos = Vector2.LEFT; break;
+			case "left_up":	addPos = Vector2.LEFT_UP; break;
+			case "up": addPos = Vector2.UP;	break;
+			case "right_up": addPos = Vector2.RIGHT_UP;	break;
+			case "right": addPos = Vector2.RIGHT; break;
+		}
+		return addPos;
+	},
+
 	walk: function(tpX, tpY){
 		this.isWalking = true;
 		let speed = this.WALK_SPEED;
-		if(this.dir == "right" || this.dir == "left") speed *= 2;
+		let speedPerDir = this._calcSpeedPerDir(speed);
 		let nextRp = this.map.getRelPosOfTile(tpX, tpY);
-		this.tweener.clear()
-			.to({
-				x: nextRp.x,
-				y: nextRp.y
-			}, speed )
-			.call(function(){
-				this._removeMapTileExistList(this.tp.x, this.tp.y);
-				this.tp = Vector2(tpX, tpY);
-				this._addMapTileExistList(tpX, tpY);
-				this.isWalking = false;
-			}.bind(this));
+		this.tweener
+			.clear()
+			.to({x: nextRp.x, y: nextRp.y}, speedPerDir )
+			.call(this._walkTweenEndCallback.bind(this, tpX, tpY));
+	},
+
+	_walkTweenEndCallback: function(tpX, tpY){
+		this.tp = Vector2(tpX, tpY);
+		this.isWalking = false;
+	},
+
+	getRelPos: function(){
+		return Vector2(this.x , this.y);
 	},
 });

@@ -8,7 +8,8 @@
 phina.define('UiLayer', {
 	superClass: 'Layer',
 
-	init: function(){
+	init: function(uiSet){
 		this.superInit();
-	},
+		this.child(uiSet);
+	}
 });

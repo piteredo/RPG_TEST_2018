@@ -11,24 +11,4 @@ phina.define('MapLayer', {
 	init: function(){
 		this.superInit();
 	},
-
-	setMapDataToLayer: function(map){
-		this.map  = map;
-	},
-
-	///getMap: function(map){
-		//return this.map;
-	//},
-
-	getTileList: function(){
-		return this.map.getTileList();
-	},
-
-	getTileLength: function(){
-		return this.map.getTileLength();
-	},
-
-	getTile: function(tpX, tpY){
-		return this.map.getTile(tpX, tpY);
-	}
 });

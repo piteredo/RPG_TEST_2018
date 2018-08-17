@@ -10,103 +10,64 @@ phina.define('Camera', {
 
 	SCREEN_CENTER_X: SCREEN_WIDTH / 2,
 	SCREEN_CENTER_Y: SCREEN_HEIGHT / 2,
-	VIEWPORT_PADDING: 100,
+	VIEWPORT_PADDING: VIEWPORT_PADDING,
 
-	init: function(layerSet, targetObj){
+	init: function(mapLayer, mainLayer, mapTileList, targetObj){
 		this.superInit();
-		this._initLayerData(layerSet);
-		this._initTargetObj(targetObj);
-		this._initPosition();
+		this.mapLayer = mapLayer;
+		this.mainLayer = mainLayer;
+		this.targetObj = targetObj; // target obj to focus
+		this._initPos();
 
-		this.viewPort = ViewPort(
-			this.mapLayer,
+		this.viewport = ViewPort(
 			this.SCREEN_CENTER_X,
 			this.SCREEN_CENTER_Y,
-			this.VIEWPORT_PADDING
+			this.VIEWPORT_PADDING,
+			this.mapLayer,
+			mapTileList
 		);
-		this.viewPort.updateViewport();
-
-		this._watchTargetPosition();
-		this._createViewportFrameForDebug();
+		this.viewport.updateViewport();
+		this._startWatchTargetPosition();
 	},
 
-
-	//暫定
-	update: function(){
-		(this.mainLayer.children.length).times(function(i){
-			let obj = this.mainLayer.children[i];
-			let tileVisible = this.mapLayer.getTile(obj.tp.x, obj.tp.y).visible;
-			if(tileVisible != obj.visible) this.mapLayer.updateChildVisibility(obj, tileVisible);
-		}.bind(this));
-	},
-
-
-
-	_initLayerData: function(layerSet){
-		this.mapLayer = layerSet.getMapLayer();
-		this.mainLayer = layerSet.getMainLayer();
-		this.uiLayer = layerSet.getUiLayer();
-	},
-
-	_initTargetObj: function(targetObj){
-		this.targetObj = targetObj; // target obj to focus
-	},
-
-	_initPosition: function(){
+	_initPos: function(){
 		let targetRp = this.targetObj.getRelPos();
-		this._setPosition(targetRp.x, targetRp.y);
+		this._setPos(targetRp.x, targetRp.y);
 	},
 
-	_setPosition: function(targetRpX, targetRpY){
-		let parentRp = this._calcParentRelPosToTargetRelPosCenter(targetRpX, targetRpY);
-		this.mapLayer.setPosition(parentRp.x, parentRp.y);
-		this.mainLayer.setPosition(parentRp.x, parentRp.y);
+	_setPos: function(targetRpX, targetRpY){
+		this._setPosX(targetRpX);
+		this._setPosY(targetRpY);
 	},
 
-	_setX: function(targetRpX){
-		let parentRpX = this._calcParentRelPosXToTargetRelPosXCenter(targetRpX);
-		this.mapLayer.x = parentRpX;
-		this.mainLayer.x = parentRpX;
+	_setPosX: function(targetRpX){
+		let distFromCenterX = this._calcDistFromCenterX(targetRpX);
+		this.mapLayer.setX(-distFromCenterX);
+		this.mainLayer.setX(-distFromCenterX);
 	},
 
-	_setY: function(targetRpY){
-		let parentRpY = this._calcParentRelPosYToTargetRelPosYCenter(targetRpY);
-		this.mapLayer.y = parentRpY;
-		this.mainLayer.y = parentRpY;
+	_setPosY: function(targetRpY){
+		let distFromCenterY = this._calcDistFromCenterY(targetRpY);
+		this.mapLayer.setY(-distFromCenterY);
+		this.mainLayer.setY(-distFromCenterY);
 	},
 
-	_calcParentRelPosToTargetRelPosCenter: function(targetRpX, targetRpY){
-		let parentRpX = this.SCREEN_CENTER_X - targetRpX;
-		let parentRpY = this.SCREEN_CENTER_Y - targetRpY;
-		return Vector2(parentRpX, parentRpY);
+	_calcDistFromCenterX: function(targetRpX){
+		return targetRpX - this.SCREEN_CENTER_X;
 	},
 
-	_calcParentRelPosXToTargetRelPosXCenter: function(targetRpX){
-		return parentRpX = this.SCREEN_CENTER_X - targetRpX;
+	_calcDistFromCenterY: function(targetRpY){
+		return targetRpY - this.SCREEN_CENTER_Y;
 	},
 
-	_calcParentRelPosYToTargetRelPosYCenter: function(targetRpY){
-		return parentRpY = this.SCREEN_CENTER_Y - targetRpY;
-	},
-
-	_watchTargetPosition: function(){
+	_startWatchTargetPosition: function(){
 		this.targetObj.$watch("x", function(newRpX, oldRpX){
-			this._setX(newRpX);
-			this.viewPort.updateViewport();
+			this._setPosX(newRpX);
+			this.viewport.updateViewport();
 		}.bind(this));
 		this.targetObj.$watch("y", function(newRpY, oldRpY){
-			this._setY(newRpY);
-			this.viewPort.updateViewport();
+			this._setPosY(newRpY);
+			this.viewport.updateViewport();
 		}.bind(this));
-	},
-
-	_createViewportFrameForDebug: function(){
-		let viewport = PathShape({strokeWidth:1, stroke:"white"})
-			.addPath(this.VIEWPORT_PADDING, this.VIEWPORT_PADDING)
-			.addPath(SCREEN_WIDTH-this.VIEWPORT_PADDING, this.VIEWPORT_PADDING)
-			.addPath(SCREEN_WIDTH-this.VIEWPORT_PADDING, SCREEN_HEIGHT-this.VIEWPORT_PADDING)
-			.addPath(this.VIEWPORT_PADDING, SCREEN_HEIGHT-this.VIEWPORT_PADDING)
-			.addPath(this.VIEWPORT_PADDING, this.VIEWPORT_PADDING)
-			.addChildTo(this.uiLayer);
-	},
+	}
 });

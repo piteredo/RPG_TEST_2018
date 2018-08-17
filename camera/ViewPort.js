@@ -9,16 +9,12 @@ phina.define('ViewPort', {
 
 	visibleTileList: [],
 
-	init: function(mapLayer, SCREEN_CENTER_X, SCREEN_CENTER_Y, VIEWPORT_PADDING){
-		this.mapLayer = mapLayer;
+	init: function(SCREEN_CENTER_X, SCREEN_CENTER_Y, VIEWPORT_PADDING, mapLayer, mapTileList){
 		this.SCREEN_CENTER_X = SCREEN_CENTER_X;
 		this.SCREEN_CENTER_Y = SCREEN_CENTER_Y;
 		this.VIEWPORT_PADDING = VIEWPORT_PADDING;
-		this._initMapData();
-	},
-
-	_initMapData: function(){
-		this.mapTileList = this.mapLayer.getTileList();
+		this.mapLayer = mapLayer;
+		this.mapTileList = mapTileList;
 	},
 
 	updateViewport: function(){
@@ -142,7 +138,7 @@ phina.define('ViewPort', {
 		// [doesn't use] let rightBottomY = cornerTileList.rightOfBottom.tp.y;
 		let yMin = leftTopY;
 		let yMax = leftTopY;
-		let tileLength = this.mapLayer.getTileLength();
+		let tileLength = this.mapTileList.length;
 
 		for(let x=leftTopX; x<=rightBottomX; x++){
 			for(let y=yMin; y<=yMax; y++){
@@ -180,7 +176,6 @@ phina.define('ViewPort', {
 			let newTile = newVisibleTileList[i];
 			if(!dupOfNewList.contains(newTile)){
 				this.mapLayer.child(newTile);
-				this.mapLayer.updateChildVisibility(newTile, true);
 			}
 		}.bind(this));
 
@@ -188,11 +183,10 @@ phina.define('ViewPort', {
 		(this.visibleTileList.length).times(function(i){
 			let oldTile = this.visibleTileList[i];
 			if(!dupOfOldList.contains(oldTile)){
-				this.mapLayer.updateChildVisibility(oldTile, false);
 				this.mapLayer.remove(oldTile);
 			}
 		}.bind(this));
 
 		this.visibleTileList = newVisibleTileList.clone();
-	}
+	},
 });
