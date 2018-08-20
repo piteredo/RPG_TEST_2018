@@ -8,7 +8,7 @@
 phina.define('Map', {
 	superClass: 'DisplayElement',
 
-	TILE_LENGTH: 11, //same as TILE_LAYOUT.
+	TILE_LENGTH: 61, //same as TILE_LAYOUT.
 	TILE_WIDTH: 40 * 2, //Twice of height = ratio 2:1
 	TILE_HEIGHT: 40,
 	TILE_PADDING: 0,
