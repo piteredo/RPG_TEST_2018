@@ -211,7 +211,7 @@ phina.define('Enemy', {
 	},
 
 	_respawnTimerTest: function(){
-		setTimeout(this._respawn.bind(this), 8000);
+		setTimeout(this._respawn.bind(this), 15000);
 	},
 
 	_respawn: function(){
