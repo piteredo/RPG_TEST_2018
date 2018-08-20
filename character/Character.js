@@ -22,6 +22,7 @@ phina.define('Character', {
 		this.isWalkable = false;
 		this.isWalking = false;
 		this.isAnimating = false;
+		this.isDead = false;
 
 		this.setVisible(false);
 	},

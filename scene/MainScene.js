@@ -32,7 +32,7 @@ phina.define('MainScene', {
 	},
 
 	_initEnemys: function(mainLayerChildrenList){ // 暫定
-		const ENEMY_AREA_LENGTH = 6; // x y same
+		const ENEMY_AREA_LENGTH = 2; // x y same
 		const ENEMY_AREA_SIZE = Math.floor(this.map.getTileLength()/ENEMY_AREA_LENGTH);
 		for(let x=0; x<ENEMY_AREA_LENGTH; x++){
 			for(let y=0; y<ENEMY_AREA_LENGTH; y++){

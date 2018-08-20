@@ -14,7 +14,7 @@ phina.define('Enemy', {
 	HEIGHT: 64,
 	ORIGIN_X: 0.5,
 	ORIGIN_Y: 0.96,
-	WALK_SPEED: 700, // ms
+	WALK_SPEED: 900, // ms
 
 	//isInWalkMode: true,
   isInChaseMode: false,
@@ -23,11 +23,15 @@ phina.define('Enemy', {
 	//TIMER_RANGE_MAX: 7,
 	CHASE_SPEED: 400,
 	CHASE_AREA_RANGE: 3,
-	BATTLE_AREA_RANGE: 3,
+	BATTLE_AREA_RANGE: 1,
 
 	WAIT_SECOND_RANGE_MIN: 2,
 	WAIT_SECOND_RANGE_MAX: 7,
 	BATTLE_WAIT_SECOND: 1,
+
+	hp: 100,
+	str: 10,
+	def: 10,
 
 	init: function(map, mainLayer, tpX, tpY, areaMinX, areaMaxX, areaMinY, areaMaxY, dir){
 		this.superInit(
@@ -55,54 +59,79 @@ phina.define('Enemy', {
 	},
 
 	update: function(){
-		//if(this.isInBattleMode) this._searchBattleArea();
-		/*else*/ if(!this.isInBattleMode && !this.isInChaseMode) this._searchChaseArea();
+		if(!this.isInBattleMode && !this.isInChaseMode && !this.isDead) this._searchChaseArea();
+		if(!this.isInBattleMode && !this.isDead) this._searchBattleArea();
 	},
 
 	_searchBattleArea: function(){
+		let attackRp = null;
 		let rangeMinX = this.tp.x - this.BATTLE_AREA_RANGE;
 		let rangeMinY = this.tp.y - this.BATTLE_AREA_RANGE;
 		let rangeMaxX = this.tp.x + this.BATTLE_AREA_RANGE;
 		let rangeMaxY = this.tp.y + this.BATTLE_AREA_RANGE;
-		let targetExistance = false;
 		for(let x=rangeMinX; x<=rangeMaxX; x++){
 			for(let y=rangeMinY; y<=rangeMaxY; y++){
 				if(x == this.tp.x && y == this.tp.y) continue;
-				if(this.targetObj.tp.x == x && this.targetObj.tp.y == y){
-					//targetExistance = true;
+				let tileTpX = x;
+				let tileTpY = y;
+				let result = this.mainLayer.searchChildExistance(tileTpX, tileTpY);
+				if(result == this.targetObj){
+					if(!result.isDead){
+						this.isInBattleMode = true;
+						attackRp = result.position;
+						if(!this.isWalking){
+							this._startBattle(attackRp.x, attackRp.y);
+							return;
+						}
+					}
 				}
 			}
 		}
-		if(targetExistance) this._startBattle();
-		else{
-			//this._searchChaseArea();
+		if(attackRp == null){
+			this.isInBattleMode = false;
+			this._searchChaseArea();
 		}
 	},
 
 	_searchChaseArea: function(){
+		let objList = [];
 		let rangeMinX = this.tp.x - this.CHASE_AREA_RANGE;
 		let rangeMinY = this.tp.y - this.CHASE_AREA_RANGE;
 		let rangeMaxX = this.tp.x + this.CHASE_AREA_RANGE;
 		let rangeMaxY = this.tp.y + this.CHASE_AREA_RANGE;
-
-
 		for(let x=rangeMinX; x<=rangeMaxX; x++){
 			for(let y=rangeMinY; y<=rangeMaxY; y++){
 				let tileTpX = x;
 				let tileTpY = y;
 				let result = this.mainLayer.searchChildExistance(tileTpX, tileTpY);
-				if(result && result.uuid != this.uuid){
-					this.targetObj = result;
+				/*if(result == this.targetObj && result != this){
+					//console.log("1");
+					//this._startChasing();
+					//return;
+				}
+				else */if(result && result != this){
+					if(!result.isDead) objList.push(result);
 				}
 			}
 		}
-		if(this.targetObj){
-			//this.isInChaseMode = true;
-			//this._startChasing();
+		if(objList.length > 0){
+			this.targetObj = objList[0];
+			this.isInChaseMode = true;
+			if(!this.isWalking){
+				clearTimeout(this.walkModeTimer);
+				this._startChasing();
+			}
+		}
+		else if(this.isInChaseMode){
+			this.isInChaseMode = false;
+			this.targetObj = null;
+			this._startWalkMode();
 		}
 	},
 
 	_startWalkMode: function(){
+		if(this.isDead) return;
+
 		let randomWaitSecond = Math.randint(this.WAIT_SECOND_RANGE_MIN, this.WAIT_SECOND_RANGE_MAX)
 		this.walkModeTimer = setTimeout(this._waitEndCallBack.bind(this), randomWaitSecond);
 	},
@@ -128,24 +157,67 @@ phina.define('Enemy', {
 	},
 
 	_startChasing: function(){
+		if(this.isDead) return;
+
 		let speed = this.CHASE_SPEED;
 		let goalTp = this.targetObj.tp;
+		if(this.tp.equals(goalTp)){
+			let dirList = [];
+			let dirX = [-1,-1,-1,0,0,1,1,1];
+			let dirY = [-1,0,1,-1,1,-1,0,1];
+			for(let x=0; x<dirX.length; x++){
+				let newGoal = goalTp.clone().add(Vector2(dirX[x], dirY[x]));
+				let isGoalTileWalkable = this._checkPosIsWalkable(newGoal.x, newGoal.y);
+				if(isGoalTileWalkable) dirList.push(newGoal);
+			}
+			goalTp = dirList.random();
+		}
 		let routeList = this._calcRouteList(goalTp.x, goalTp.y);
 		let dir = routeList[0].parentObj.dir; // なぜ parentObj?
 		this.animation(dir);
+		this.isChasing = true;
 		this.isWalking = true;
 		this.walk(routeList, speed);
 	},
 
-	_startBattle: function(){
-		//console.log("attacked to " + this.targetObj.uuid);
+	_startBattle: function(rpX, rpY){
+		if(this.isDead) return;
+
 		this.tweener
 			.clear()
-			.to({x: this.targetObj.x, y: this.targetObj.y}, 80)
+			.to({x: rpX, y: rpY}, 80)
 			.to({x: this.x, y: this.y}, 80)
-			//.call( damage 処理)
+			.call(this._damageTest.bind(this, this.targetObj))
 			.wait(this.BATTLE_WAIT_SECOND * 1000)
 			.call(this._searchBattleArea.bind(this));
+	},
+
+	_damageTest: function(targetObj){
+		targetObj.hp -= this.str - targetObj.def/2;
+		//console.log(this.uuid + "attaked to" + targetObj.uuid + targetObj.hp);
+		if(targetObj.hp<=0){
+			targetObj.isDead = true;
+			targetObj.isInBattleMode = false;
+			targetObj.isInChaseMode = false;
+			targetObj.animationEnd(targetObj.dir);
+			targetObj.setFrameIndex(5);
+			targetObj._respawnTimerTest();
+			//targetObj.alpha = 0.5;
+			this.isInBattleMode = false;
+			this.isInChaseMode = false;
+			this.targetObj = null;
+			this._startWalkMode();
+		}
+	},
+
+	_respawnTimerTest: function(){
+		setTimeout(this._respawn.bind(this), 8000);
+	},
+
+	_respawn: function(){
+		this.hp = 100;
+		this.isDead = false;
+		this._startWalkMode();
 	},
 
 	_calcRandomGoalTilePos: function(){
@@ -180,8 +252,19 @@ phina.define('Enemy', {
 	},
 
 	_walkTweenEndCallback: function(x, y, routeList, speed){
+
 		this.tp = Vector2(x, y);
 		this.isWalking = false;
+
+		if(this.isInBattleMode){
+			this._searchBattleArea();
+			return;
+		}
+		else if(this.isInChaseMode && !this.isChasing){
+			this._searchChaseArea();
+			return;
+		}
+
 		routeList.shift();
 		if(routeList.length > 1){
 			let dir = routeList[0].parentObj.dir; // なぜ parentObj?
@@ -190,6 +273,7 @@ phina.define('Enemy', {
 		}
 		else if(routeList.length == 1 && this.isInChaseMode){
 			this.animationEnd(this.dir);
+			this.isChasing = false;
 			this._searchBattleArea();
 		}
 		else if(routeList.length == 1){
@@ -199,7 +283,7 @@ phina.define('Enemy', {
 		}
 		else{
 			this.animationEnd(this.dir);
-			this._startWalkMode();
+			if(!this.isDead) this._startWalkMode();
 		}
 	},
 

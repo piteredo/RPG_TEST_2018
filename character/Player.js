@@ -16,6 +16,10 @@ phina.define('Player', {
 	ORIGIN_Y: 0.96,
 	WALK_SPEED: 300, // ms
 
+	hp: 100,
+	str: 10,
+	def: 10,
+
 	init: function(map, tpX, tpY, dir){
 		this.superInit(
 			map,
@@ -27,6 +31,17 @@ phina.define('Player', {
 			this.ORIGIN_X,
 			this.ORIGIN_Y
 		);
+	},
+
+	_respawnTimerTest: function(){
+		setTimeout(this._respawn.bind(this), 8000);
+	},
+
+	_respawn: function(){
+		this.hp = 100;
+		this.isDead = false;
+		//this._startWalkMode();
+		this.setFrameIndex(0);
 	},
 
 	// LOOP
